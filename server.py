@@ -22,31 +22,27 @@ from fastapi.staticfiles import StaticFiles
 logger = logging.getLogger("bdh-server")
 logging.basicConfig(level=logging.INFO)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # ──────────────────────────────────────────
 # FastAPI App
 # ──────────────────────────────────────────
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this in production to match Vercel frontend domains
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DTYPE = torch.float32
 
-# Serve static files (style.css, icon.png etc.)
-if not os.path.exists("static"):
-    os.makedirs("static")
-app.mount("/static", StaticFiles(directory="."), name="static")
-
 @app.get("/")
-async def get():
-    return FileResponse("index.html")
-
-@app.get("/{file_name}")
-async def get_file(file_name: str):
-    path = os.path.join(".", file_name)
-    if os.path.isfile(path):
-        if file_name.endswith(".js"):
-            return FileResponse(path, media_type="application/javascript")
-        return FileResponse(path)
-    return {"error": "File not found"}
+async def health_check():
+    return {"status": "ok", "message": "BDH Backend is running"}
 
 # ──────────────────────────────────────────
 # Load Model
