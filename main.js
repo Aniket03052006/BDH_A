@@ -7,12 +7,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let NEURON_COUNT = 16384; // default, will be updated from server config
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const BACKEND_HOSTS = [
-    'bdh-repo.onrender.com',
-    'bdh-repo-n9hl.onrender.com',
-    'bdh-repo-9ein.onrender.com',
-    'bdh-repo-yosc.onrender.com'
+    'bdh-a-ubwu.onrender.com',
+    'bdh-a.onrender.com'
 ];
-let currentHostIndex = 0;
+// Start at a random host to distribute traffic initially (load balancing / round robin)
+let currentHostIndex = Math.floor(Math.random() * BACKEND_HOSTS.length);
 let failoverRetryCount = 0;
 
 // Monosemantic color gradient: black → blue → cyan → yellow → white
