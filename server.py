@@ -951,8 +951,23 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
 
     except WebSocketDisconnect:
+        logger.info("Client disconnected normally")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+    finally:
         manager.disconnect(websocket)
-        logger.info("Client disconnected")
+        logger.info("Cleaning up session memory")
+        if session:
+            # Force deletion of tensors to avoid GPU/RAM leaks
+            del session.hebb_memory
+            del session.history_tokens
+            del session.xy_timeline
+            del session.neuron_word_map
+            del session
+        import gc
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 # ──────────────────────────────────────────
